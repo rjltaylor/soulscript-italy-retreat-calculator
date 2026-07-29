@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Italy Retreat Profit Calculator — Model Costs, Break-Even &amp; Profit</title>
+<meta name="description" content="An interactive profit-modeling calculator for a 10-day Italy retreat. Model villa, catering, transport, excursion and marketing costs against guest count and pricing tiers to find your break-even point and net profit." />
+
+<!-- Fontshare: Zodiak (display) + General Sans (body) -->
+<link href="https://api.fontshare.com/v2/css?f[]=zodiak@500,600,700&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='11' r='6' fill='%23C1622D'/%3E%3Cpath d='M16 17 L23 30 H9 Z' fill='%231F6F78'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <svg class="brand-mark" width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Retreat calculator logo">
+        <circle cx="16" cy="11" r="6" fill="var(--color-primary)" />
+        <path d="M16 17 L23 30 H9 Z" fill="var(--color-secondary)" />
+      </svg>
+      <div class="brand-text">
+        <p class="brand-eyebrow">Retreat Business Toolkit</p>
+        <h1 class="brand-title">Italy Retreat Profit Calculator</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-ghost" id="resetBtn" title="Reset all inputs to example defaults">Reset to example</button>
+      <button type="button" class="btn btn-ghost icon-btn" id="printBtn" title="Print or save as PDF" aria-label="Print or save as PDF">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      </button>
+      <button type="button" class="btn btn-ghost icon-btn" id="themeToggle" aria-label="Switch to dark mode" data-theme-toggle>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Sticky live-summary bar -->
+<div class="summary-bar" id="summaryBar">
+  <div class="summary-bar-inner">
+    <div class="summary-item">
+      <span class="summary-label">Guests</span>
+      <span class="summary-value" id="sumGuests">10</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Revenue</span>
+      <span class="summary-value" id="sumRevenue">$0</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Total cost</span>
+      <span class="summary-value" id="sumCost">$0</span>
+    </div>
+    <div class="summary-item summary-item-profit">
+      <span class="summary-label">Net profit</span>
+      <span class="summary-value" id="sumProfit">$0</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Margin</span>
+      <span class="summary-value" id="sumMargin">0%</span>
+    </div>
+  </div>
+</div>
+
+<main class="layout">
+
+  <!-- ============ INPUT COLUMN ============ -->
+  <section class="input-column" aria-label="Retreat cost and pricing inputs">
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5"/></svg>
+        </span>
+        <h2 class="panel-title">Retreat Basics</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="nights">Retreat length (nights)</label>
+          <input type="number" id="nights" min="1" max="30" value="10" />
+        </div>
+        <div class="field-row">
+          <label for="minGuests">Minimum guests</label>
+          <input type="number" id="minGuests" min="1" max="30" value="6" />
+        </div>
+        <div class="field-row">
+          <label for="maxCapacity">Maximum capacity</label>
+          <input type="number" id="maxCapacity" min="1" max="30" value="12" />
+        </div>
+        <div class="field-row slider-row">
+          <label for="guestCount">Guest count for this retreat <span class="hint">(drag to explore)</span></label>
+          <div class="slider-wrap">
+            <input type="range" id="guestCount" min="6" max="12" step="1" value="10" />
+            <output id="guestCountOut" class="slider-output">10</output>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-6 7 6v11"/><path d="M9 21v-6h6v6"/></svg>
+        </span>
+        <h2 class="panel-title">Villa Rental</h2>
+        <span class="panel-badge fixed-badge">Fixed</span>
+      </div>
+      <div class="panel-body">
+        <div class="toggle-group" role="group" aria-label="Villa rate type">
+          <button type="button" class="toggle-btn active" data-villa-mode="weekly">Weekly rate</button>
+          <button type="button" class="toggle-btn" data-villa-mode="daily">Daily rate</button>
+        </div>
+        <div class="field-row" id="villaWeeklyField">
+          <label for="villaWeeklyRate">Weekly rate ($)</label>
+          <input type="number" id="villaWeeklyRate" min="0" step="50" value="8500" />
+        </div>
+        <div class="field-row" id="villaDailyField" style="display:none">
+          <label for="villaDailyRate">Daily rate ($)</label>
+          <input type="number" id="villaDailyRate" min="0" step="10" value="1400" />
+        </div>
+        <p class="field-note">Weekly rate is pro-rated across your nights (nights ÷ 7 × weekly rate). Switch to daily if your villa bills per night.</p>
+        <div class="computed-line">
+          <span>Villa total</span>
+          <strong id="villaTotalOut">$0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8c0-3-2-6-6-6S6 5 6 8c0 3 2 4 2 7"/><path d="M6 21h12v-6H6z"/></svg>
+        </span>
+        <h2 class="panel-title">Chef &amp; Catering</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="chefFee">Private chef flat fee ($) <span class="tag fixed-tag">fixed</span></label>
+          <input type="number" id="chefFee" min="0" step="50" value="3000" />
+        </div>
+        <div class="field-row">
+          <label for="foodPerGuestDay">Food &amp; ingredients per guest / day ($) <span class="tag variable-tag">variable</span></label>
+          <input type="number" id="foodPerGuestDay" min="0" step="1" value="45" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="16" height="10" rx="2"/><path d="M17 10h3l3 3v4h-6z"/><circle cx="5.5" cy="19.5" r="1.5"/><circle cx="17.5" cy="19.5" r="1.5"/></svg>
+        </span>
+        <h2 class="panel-title">Local Transport</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="transportFixed">Van / driver rental ($) <span class="tag fixed-tag">fixed</span></label>
+          <input type="number" id="transportFixed" min="0" step="25" value="1200" />
+        </div>
+        <div class="field-row">
+          <label for="transportPerGuest">Airport transfers per guest ($) <span class="tag variable-tag">variable</span></label>
+          <input type="number" id="transportPerGuest" min="0" step="5" value="50" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <h2 class="panel-title">Excursions &amp; Activities</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="excursionPerGuest">Excursions / classes per guest ($) <span class="tag variable-tag">variable</span></label>
+          <input type="number" id="excursionPerGuest" min="0" step="10" value="350" />
+        </div>
+        <div class="field-row">
+          <label for="excursionFixed">Guides, permits &amp; bookings ($) <span class="tag fixed-tag">fixed</span></label>
+          <input type="number" id="excursionFixed" min="0" step="25" value="500" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L22 2l-6 20-4-9-9-4z"/></svg>
+        </span>
+        <h2 class="panel-title">Your Travel &amp; Prep</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="hostTravel">Host flights, lodging &amp; prep ($) <span class="tag fixed-tag">fixed</span></label>
+          <input type="number" id="hostTravel" min="0" step="50" value="2500" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11 12.5v6a2 2 0 0 1-4 0v-4.5"/></svg>
+        </span>
+        <h2 class="panel-title">Marketing Spend</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="marketing">Ads, launch &amp; funnel cost per retreat ($) <span class="tag fixed-tag">fixed</span></label>
+          <input type="number" id="marketing" min="0" step="50" value="3000" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/></svg>
+        </span>
+        <h2 class="panel-title">Buffer &amp; Fees</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="contingencyPct">Contingency buffer on total costs (%)</label>
+          <input type="number" id="contingencyPct" min="0" max="50" step="1" value="8" />
+        </div>
+        <div class="field-row">
+          <label for="paymentFeePct">Payment processing fee on revenue (%)</label>
+          <input type="number" id="paymentFeePct" min="0" max="10" step="0.1" value="3" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L11 3.83V3H10.17L3 10.17V11l9.58 9.58a2 2 0 0 0 2.83 0l5.18-5.18a2 2 0 0 0 0-2.99z"/><circle cx="6.5" cy="6.5" r="1"/></svg>
+        </span>
+        <h2 class="panel-title">Per-Guest Pricing Tiers</h2>
+      </div>
+      <div class="panel-body">
+        <p class="field-note">Set a price per tier and its share of guests. Shares are normalized automatically if they don't total 100%.</p>
+
+        <div class="tier-row">
+          <div class="tier-name">Shared room</div>
+          <div class="tier-inputs">
+            <label class="sr-only" for="tier1Price">Shared room price</label>
+            <div class="input-prefix"><span>$</span><input type="number" id="tier1Price" min="0" step="50" value="3800" /></div>
+            <label class="sr-only" for="tier1Pct">Shared room mix percent</label>
+            <div class="input-suffix"><input type="number" id="tier1Pct" min="0" max="100" step="5" value="50" /><span>%</span></div>
+          </div>
+          <div class="tier-guests" id="tier1Guests">5 guests</div>
+        </div>
+
+        <div class="tier-row">
+          <div class="tier-name">Private room</div>
+          <div class="tier-inputs">
+            <label class="sr-only" for="tier2Price">Private room price</label>
+            <div class="input-prefix"><span>$</span><input type="number" id="tier2Price" min="0" step="50" value="4800" /></div>
+            <label class="sr-only" for="tier2Pct">Private room mix percent</label>
+            <div class="input-suffix"><input type="number" id="tier2Pct" min="0" max="100" step="5" value="35" /><span>%</span></div>
+          </div>
+          <div class="tier-guests" id="tier2Guests">4 guests</div>
+        </div>
+
+        <div class="tier-row">
+          <div class="tier-name">Suite / single</div>
+          <div class="tier-inputs">
+            <label class="sr-only" for="tier3Price">Suite price</label>
+            <div class="input-prefix"><span>$</span><input type="number" id="tier3Price" min="0" step="50" value="5800" /></div>
+            <label class="sr-only" for="tier3Pct">Suite mix percent</label>
+            <div class="input-suffix"><input type="number" id="tier3Pct" min="0" max="100" step="5" value="15" /><span>%</span></div>
+          </div>
+          <div class="tier-guests" id="tier3Guests">1 guests</div>
+        </div>
+
+        <div class="computed-line">
+          <span>Blended price / guest</span>
+          <strong id="avgPriceOut">$0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        </span>
+        <h2 class="panel-title">Monthly Income Goal</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="monthlyTarget">Monthly income target ($)</label>
+          <input type="number" id="monthlyTarget" min="0" step="500" value="10000" />
+        </div>
+        <div class="field-row">
+          <label for="retreatsPerYear">Retreats you plan to run / year</label>
+          <input type="number" id="retreatsPerYear" min="1" max="24" step="1" value="4" />
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ RESULTS COLUMN ============ -->
+  <section class="results-column" aria-label="Profit model results">
+
+    <div class="panel kpi-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">This Retreat, At a Glance</h2>
+        <span class="panel-badge" id="occupancyBadge">83% occupancy</span>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Total fixed costs</span>
+          <span class="kpi-value" id="kpiFixed">$0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Variable cost / guest</span>
+          <span class="kpi-value" id="kpiVarPerGuest">$0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total cost (incl. buffer)</span>
+          <span class="kpi-value" id="kpiTotalCost">$0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Total revenue</span>
+          <span class="kpi-value" id="kpiRevenue">$0</span>
+        </div>
+        <div class="kpi-card kpi-card-accent">
+          <span class="kpi-label">Net profit</span>
+          <span class="kpi-value" id="kpiProfit">$0</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Profit margin</span>
+          <span class="kpi-value" id="kpiMargin">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Break-Even Point</h2>
+      </div>
+      <div class="panel-body">
+        <div class="breakeven-row" id="breakevenRow">
+          <div class="breakeven-stat">
+            <span class="kpi-label">Break-even guests</span>
+            <span class="kpi-value" id="beGuests">—</span>
+          </div>
+          <div class="breakeven-stat">
+            <span class="kpi-label">Break-even occupancy</span>
+            <span class="kpi-value" id="beOccupancy">—</span>
+          </div>
+          <div class="breakeven-stat">
+            <span class="kpi-label">Contribution margin / guest</span>
+            <span class="kpi-value" id="beContribution">—</span>
+          </div>
+        </div>
+        <p class="field-note" id="beNote"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Revenue, Cost &amp; Profit by Guest Count</h2>
+      </div>
+      <div class="panel-body">
+        <div class="chart-wrap">
+          <canvas id="profitChart" height="260" role="img" aria-label="Bar and line chart comparing revenue, cost and profit across guest counts from minimum guests to maximum capacity"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Occupancy Sensitivity Table</h2>
+      </div>
+      <div class="panel-body table-wrap">
+        <table class="sensitivity-table" id="sensitivityTable">
+          <thead>
+            <tr>
+              <th scope="col">Guests</th>
+              <th scope="col">Occupancy</th>
+              <th scope="col">Revenue</th>
+              <th scope="col">Total cost</th>
+              <th scope="col">Net profit</th>
+              <th scope="col">Margin</th>
+            </tr>
+          </thead>
+          <tbody id="sensitivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Hitting Your Monthly Income Target</h2>
+      </div>
+      <div class="panel-body">
+        <div class="kpi-grid kpi-grid-goal">
+          <div class="kpi-card">
+            <span class="kpi-label">Profit / retreat (current settings)</span>
+            <span class="kpi-value" id="goalProfitPerRetreat">$0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Annual profit at planned frequency</span>
+            <span class="kpi-value" id="goalAnnualProfit">$0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Average monthly profit</span>
+            <span class="kpi-value" id="goalMonthlyProfit">$0</span>
+          </div>
+          <div class="kpi-card kpi-card-accent">
+            <span class="kpi-label">Gap vs. monthly target</span>
+            <span class="kpi-value" id="goalGap">$0</span>
+          </div>
+        </div>
+        <div class="goal-reverse">
+          <p class="goal-reverse-line">To hit your target running <strong id="goalRetreatsLabel">4</strong> retreats/year at the current guest count, you'd need a blended price of <strong id="goalRequiredPrice">$0</strong> / guest instead of <strong id="goalCurrentPrice">$0</strong>.</p>
+          <p class="goal-reverse-line">Or, keeping today's blended price, you'd need to run <strong id="goalRequiredRetreats">0</strong> retreats/year to hit your monthly target.</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Built for planning purposes — figures are estimates based on the assumptions you enter. Revisit villa contracts, chef quotes and excursion pricing before finalizing your budget.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
