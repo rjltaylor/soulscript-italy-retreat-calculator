@@ -369,6 +369,14 @@ input[type="number"], input[type="text"] {
   font-weight: 500;
   color: var(--color-text-muted);
   text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .toggle-btn {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.78rem;
+  }
 }
 .toggle-btn.active {
   background: var(--color-primary);

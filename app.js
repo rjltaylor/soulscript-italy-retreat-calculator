@@ -40,7 +40,7 @@
   const inputs = {
     nights: el('nights'), minGuests: el('minGuests'), maxCapacity: el('maxCapacity'),
     guestCount: el('guestCount'), guestCountOut: el('guestCountOut'),
-    villaWeeklyRate: el('villaWeeklyRate'), villaDailyRate: el('villaDailyRate'),
+    villaWeeklyRate: el('villaWeeklyRate'), villaDailyRate: el('villaDailyRate'), villaFlatRate: el('villaFlatRate'),
     chefFee: el('chefFee'), foodPerGuestDay: el('foodPerGuestDay'),
     transportFixed: el('transportFixed'), transportPerGuest: el('transportPerGuest'),
     excursionPerGuest: el('excursionPerGuest'), excursionFixed: el('excursionFixed'),
@@ -53,6 +53,11 @@
   };
 
   let villaMode = 'weekly';
+  const villaFieldNotes = {
+    weekly: 'Weekly rate is pro-rated across your nights (nights \u00f7 7 \u00d7 weekly rate). Switch to daily if your villa bills per night, or to set price if the owner quoted one flat total for your whole stay.',
+    daily: 'Daily rate is multiplied by your number of nights. Switch to weekly if your villa bills by the week, or to set price if the owner quoted one flat total for your whole stay.',
+    flat: 'This is the full flat total for your whole stay at your current number of nights \u2014 it is used as-is and is not multiplied again. If your nights change, update this total with your villa owner\u2019s new quote.',
+  };
   const villaToggleBtns = document.querySelectorAll('[data-villa-mode]');
   villaToggleBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -60,6 +65,8 @@
       villaToggleBtns.forEach((b) => b.classList.toggle('active', b === btn));
       el('villaWeeklyField').style.display = villaMode === 'weekly' ? '' : 'none';
       el('villaDailyField').style.display = villaMode === 'daily' ? '' : 'none';
+      el('villaFlatField').style.display = villaMode === 'flat' ? '' : 'none';
+      el('villaFieldNote').textContent = villaFieldNotes[villaMode];
       recalc();
     });
   });
@@ -89,7 +96,9 @@
 
     const villaCost = villaMode === 'weekly'
       ? (nights / 7) * num(inputs.villaWeeklyRate, 0)
-      : nights * num(inputs.villaDailyRate, 0);
+      : villaMode === 'daily'
+      ? nights * num(inputs.villaDailyRate, 0)
+      : num(inputs.villaFlatRate, 0);
 
     const fixedCosts =
       villaCost +
@@ -366,7 +375,7 @@
   document.getElementById('resetBtn').addEventListener('click', () => {
     const defaults = {
       nights: 10, minGuests: 6, maxCapacity: 12, guestCount: 10,
-      villaWeeklyRate: 8500, villaDailyRate: 1400,
+      villaWeeklyRate: 8500, villaDailyRate: 1400, villaFlatRate: 12000,
       chefFee: 3000, foodPerGuestDay: 45,
       transportFixed: 1200, transportPerGuest: 50,
       excursionPerGuest: 350, excursionFixed: 500,
@@ -382,6 +391,8 @@
     villaToggleBtns.forEach((b) => b.classList.toggle('active', b.getAttribute('data-villa-mode') === 'weekly'));
     el('villaWeeklyField').style.display = '';
     el('villaDailyField').style.display = 'none';
+    el('villaFlatField').style.display = 'none';
+    el('villaFieldNote').textContent = villaFieldNotes.weekly;
     recalc();
   });
 

@@ -112,8 +112,9 @@
       </div>
       <div class="panel-body">
         <div class="toggle-group" role="group" aria-label="Villa rate type">
-          <button type="button" class="toggle-btn active" data-villa-mode="weekly">Weekly rate</button>
-          <button type="button" class="toggle-btn" data-villa-mode="daily">Daily rate</button>
+          <button type="button" class="toggle-btn active" data-villa-mode="weekly">Weekly</button>
+          <button type="button" class="toggle-btn" data-villa-mode="daily">Daily</button>
+          <button type="button" class="toggle-btn" data-villa-mode="flat">Set price</button>
         </div>
         <div class="field-row" id="villaWeeklyField">
           <label for="villaWeeklyRate">Weekly rate ($)</label>
@@ -123,7 +124,11 @@
           <label for="villaDailyRate">Daily rate ($)</label>
           <input type="number" id="villaDailyRate" min="0" step="10" value="1400" />
         </div>
-        <p class="field-note">Weekly rate is pro-rated across your nights (nights ÷ 7 × weekly rate). Switch to daily if your villa bills per night.</p>
+        <div class="field-row" id="villaFlatField" style="display:none">
+          <label for="villaFlatRate">Total price for your stay ($)</label>
+          <input type="number" id="villaFlatRate" min="0" step="50" value="12000" />
+        </div>
+        <p class="field-note" id="villaFieldNote">Weekly rate is pro-rated across your nights (nights ÷ 7 × weekly rate). Switch to daily if your villa bills per night, or to set price if the owner quoted one flat total for your whole stay.</p>
         <div class="computed-line">
           <span>Villa total</span>
           <strong id="villaTotalOut">$0</strong>
